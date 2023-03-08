@@ -25,7 +25,7 @@ model User {
 
   orders  Order[]
   reviews Review[]
-  Product Product[]
+  favorites Product[]
 }
 
 model Product {
