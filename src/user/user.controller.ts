@@ -16,7 +16,7 @@ import { CurrentUser } from '../auth/decorators/user.decorator';
 import { UserDto } from './user.dto';
 import { AuthDto } from '../auth/dto/auth.dto';
 
-@Controller('user')
+@Controller('users')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
