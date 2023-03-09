@@ -26,21 +26,21 @@ export class UserController {
     return this.userService.byId(id);
   }
 
-  // @UsePipes(new ValidationPipe())
-  // @HttpCode(200)
-  // @Auth()
-  // @Put('profile')
-  // async updateProfile(@CurrentUser('id') id: number, @Body() dto: UserDto) {
-  //   return this.userService.updateProfile(dto);
-  // }
-  //
-  // @HttpCode(200)
-  // @Auth()
-  // @Patch('profile/favorites/:productId')
-  // async toggleFavorite(
-  //   @Param('productId') productId: string,
-  //   @CurrentUser('id') id: number,
-  // ) {
-  //   return this.userService.toggleFavorite(dto);
-  // }
+  @UsePipes(new ValidationPipe())
+  @HttpCode(200)
+  @Auth()
+  @Put('profile')
+  async updateProfile(@CurrentUser('id') id: number, @Body() dto: UserDto) {
+    return this.userService.updateProfile(id, dto);
+  }
+
+  @HttpCode(200)
+  @Auth()
+  @Patch('profile/favorites/:productId')
+  async toggleFavorite(
+    @Param('productId') productId: number,
+    @CurrentUser('id') id: number,
+  ) {
+    return this.userService.toggleFavorite(id, productId);
+  }
 }

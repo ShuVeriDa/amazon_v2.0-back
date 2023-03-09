@@ -1,8 +1,13 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { returnUserObject } from './return-user.object';
 import { Prisma } from '@prisma/client';
 import { UserDto } from './user.dto';
+import { hash } from 'argon2';
 
 @Injectable()
 export class UserService {
@@ -33,19 +38,51 @@ export class UserService {
     return user;
   }
 
-  // async updateProfile(id: number, dto: UserDto) {
-  //   // const user = await this.byId(id);
-  //
-  //   // const updatedUser = await this.prisma.user.update({
-  //   //   where: { id },
-  //   //   data: {
-  //   //     ...dto,
-  //   //   },
-  //   //   select: {
-  //   //     ...returnUserObject,
-  //   //   },
-  //   // });
-  //
-  //   return updatedUser;
-  // }
+  async updateProfile(id: number, dto: UserDto) {
+    const isSameUser = await this.prisma.user.findUnique({
+      where: { email: dto.email },
+    });
+
+    if (isSameUser && id !== isSameUser.id)
+      throw new BadRequestException('Email already in use');
+
+    const user = await this.byId(id);
+
+    return this.prisma.user.update({
+      where: { id },
+      data: {
+        email: dto.email,
+        name: dto.name,
+        avatarPath: dto.avatarPath,
+        phone: dto.phone,
+        password: dto.password ? await hash(dto.password) : user.password,
+      },
+      select: {
+        ...returnUserObject,
+      },
+    });
+  }
+
+  async toggleFavorite(userId: number, productId: number) {
+    const user = await this.byId(userId);
+
+    if (!user) throw new NotFoundException('User not found');
+
+    const isExist = user.favorites.some((product) => product.id === productId);
+
+    await this.prisma.user.update({
+      where: {
+        id: user.id,
+      },
+      data: {
+        favorites: {
+          [isExist ? 'disconnect' : 'connect']: {
+            id: productId,
+          },
+        },
+      },
+    });
+
+    return 'Success';
+  }
 }
